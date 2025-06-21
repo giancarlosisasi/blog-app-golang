@@ -1,0 +1,36 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  dev:
+    cmds:
+      - air
+    silent: false
+  build:
+    cmds:
+      - go build -o blog-app.exe cmd/server/main.go
+  docker:up:
+    cmds:
+      - docker-compose -f docker/docker-compose.yml --env-file .env  up
+  migrate:up:
+    cmds:
+      - migrate -path ./migrations -database "" up
+  migrate:down:
+    cmds:
+      - migrate -path ./migrations -database "" down
+  migrate:create:
+    cmds:
+      - migrate create -ext sql -dir ./migrations $(name)
+  test:
+    cmds:
+      - go test -v ./...
+  sqlc:generate:
+    cmds:
+      - sqlc generate
+  lint:
+    cmds:
+      - golangci-lint run
