@@ -1,4 +1,4 @@
-package errors
+package utils
 
 const (
 	CREATE_USER_INVALID_PASSWORD_ERROR = iota
@@ -8,17 +8,17 @@ const (
 	CREATE_USER_FAILED_TO_CREATE_ERROR
 )
 
-type CustomError struct {
+type AppError struct {
 	Code int    `json:"code"`
 	Msg  string `json:"message"`
 }
 
-func (e CustomError) Error() string {
+func (e AppError) Error() string {
 	return e.Msg
 }
 
-func NewCustomError(code int, msg string) *CustomError {
-	return &CustomError{
+func NewCustomError(code int, msg string) *AppError {
+	return &AppError{
 		Code: code,
 		Msg:  msg,
 	}

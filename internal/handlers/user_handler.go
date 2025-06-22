@@ -3,7 +3,6 @@ package handlers
 import (
 	"blog-app/internal/models"
 	"blog-app/internal/services"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -27,7 +26,6 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	log.Info().Msg(fmt.Sprintf("%v", user))
 	ok, err := h.userService.RegisterUser(user.Email, user.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("userService.RegisterUser: error to register user")
@@ -36,12 +34,11 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 	}
 
 	if !ok {
-		log.Error().Msg("userService.RegisterUser ok false: error to register user")
 		c.Status(fiber.StatusBadRequest).JSON(err)
 		return nil
 	}
 
-	return c.JSON(&models.CreateUserResponse{
+	return c.Status(fiber.StatusCreated).JSON(&models.CreateUserResponse{
 		Success: ok,
 	})
 

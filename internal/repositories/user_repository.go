@@ -45,9 +45,5 @@ func (r *UserPostgresRepository) CheckIfEmailExists(email string) (bool, error) 
 		return false, nil
 	}
 
-	if userId.Valid {
-		return true, nil
-	}
-
-	return false, nil
+	return userId.Valid, nil
 }
