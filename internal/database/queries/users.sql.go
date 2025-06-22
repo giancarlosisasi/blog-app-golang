@@ -53,14 +53,43 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) (pgtype.UUID, 
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id FROM users where email = $1 LIMIT 1
+SELECT id, email, username FROM users where email = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (pgtype.UUID, error) {
+type GetUserByEmailRow struct {
+	ID       pgtype.UUID
+	Email    string
+	Username string
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var id pgtype.UUID
-	err := row.Scan(&id)
-	return id, err
+	var i GetUserByEmailRow
+	err := row.Scan(&i.ID, &i.Email, &i.Username)
+	return i, err
+}
+
+const getUserByEmailWithPassword = `-- name: GetUserByEmailWithPassword :one
+SELECT id, email, username, password_hash FROM users WHERE email = $1 LIMIT 1
+`
+
+type GetUserByEmailWithPasswordRow struct {
+	ID           pgtype.UUID
+	Email        string
+	Username     string
+	PasswordHash string
+}
+
+func (q *Queries) GetUserByEmailWithPassword(ctx context.Context, email string) (GetUserByEmailWithPasswordRow, error) {
+	row := q.db.QueryRow(ctx, getUserByEmailWithPassword, email)
+	var i GetUserByEmailWithPasswordRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.PasswordHash,
+	)
+	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one

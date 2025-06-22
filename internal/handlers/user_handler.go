@@ -28,7 +28,10 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 	rawUserData := new(models.CreateUserRequest)
 
 	if err := c.BodyParser(rawUserData); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(utils.NewCustomError(
+			utils.CREATE_USER_INVALID_BODY_REQUEST_ERROR,
+			"email or password is missing",
+		))
 	}
 
 	u, err := h.userService.RegisterUser(rawUserData.Email, rawUserData.Password)
@@ -63,7 +66,34 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 
 }
 
-func (h *UserHandler) Login(ctx *fiber.Ctx) error {
+func (h *UserHandler) Login(c *fiber.Ctx) error {
 	// parse the request to get the email and password data
-	return nil
+	rawUserData := new(models.LoginUserRequest)
+	if err := c.BodyParser(&rawUserData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(utils.NewCustomError(
+			utils.CREATE_USER_INVALID_BODY_REQUEST_ERROR,
+			"email or password is missing",
+		))
+	}
+
+	user, err := h.userService.LoginUser(rawUserData.Email, rawUserData.Password)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(err)
+	}
+
+	// generate and set jwt token cookie
+	jwtConfig := security.JWTDefaultConfig(h.appConfig)
+	jwtToken, err := security.GenerateJWT(jwtConfig, user.ID, user.Email, user.Username)
+	if err != nil {
+		log.Error().Err(err).Msg("error to generate jwt token")
+		return c.Status(fiber.StatusBadRequest).JSON(utils.NewCustomError(
+			utils.INTERNAL_SERVER_ERROR,
+			"internal server error",
+		))
+	}
+	security.SetJWTCookie(c, jwtConfig, jwtToken)
+
+	return c.Status(fiber.StatusOK).JSON(models.LoginUserResponse{
+		Success: true,
+	})
 }

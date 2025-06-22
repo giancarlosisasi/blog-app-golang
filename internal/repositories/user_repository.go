@@ -32,21 +32,48 @@ func (r *UserPostgresRepository) RegisterUser(email string, hashedPassword strin
 	}
 
 	return &models.UserCreated{
-		ID:       u.ID,
-		Email:    u.Email,
-		Username: u.Username,
+		BaseUser: models.BaseUser{
+			ID:       u.ID,
+			Email:    u.Email,
+			Username: u.Username,
+		},
 	}, nil
 }
 
-func (r *UserPostgresRepository) LoginUser(email, rawPassword string) (user *database.User, token string, err error) {
-	return nil, "", nil
-}
-
 func (r *UserPostgresRepository) CheckIfEmailExists(email string) (bool, error) {
-	userId, err := database.New(r.dbConn).GetUserByEmail(r.ctx, email)
+	_, err := r.GetUserByEmail(email)
 	if err != nil {
 		return false, nil
 	}
 
-	return userId.Valid, nil
+	return true, nil
+}
+
+func (r *UserPostgresRepository) GetUserByEmail(email string) (*models.BaseUser, error) {
+	user, err := database.New(r.dbConn).GetUserByEmail(r.ctx, email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.BaseUser{
+		ID:       user.ID,
+		Email:    user.Email,
+		Username: user.Username,
+	}, nil
+}
+
+func (r *UserPostgresRepository) GetUserByEmailWithPassword(email string) (*models.UserWithPasswordHash, error) {
+	user, err := database.New(r.dbConn).GetUserByEmailWithPassword(r.ctx, email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UserWithPasswordHash{
+		PasswordHash: user.PasswordHash,
+		BaseUser: models.BaseUser{
+			ID:       user.ID,
+			Username: user.Username,
+			Email:    user.Email,
+		},
+	}, nil
 }

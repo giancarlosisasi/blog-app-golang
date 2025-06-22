@@ -41,13 +41,29 @@ type LoginUserRequest struct {
 	Password string `json:"password"`
 }
 
-type UserCreated struct {
+type BaseUser struct {
 	ID       pgtype.UUID `json:"id"`
 	Email    string      `json:"email"`
 	Username string      `json:"username"`
+}
+type UserCreated struct {
+	BaseUser
 }
 
 type CreateUserResponse struct {
 	Success bool         `json:"success"`
 	Data    *UserCreated `json:"data"`
+}
+
+type UserLogged struct {
+	BaseUser
+}
+
+type UserWithPasswordHash struct {
+	BaseUser
+	PasswordHash string `json:"-"`
+}
+
+type LoginUserResponse struct {
+	Success bool `json:"success"`
 }

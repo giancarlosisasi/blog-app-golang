@@ -97,3 +97,39 @@ func (s *UserService) RegisterUser(email string, password string) (*models.UserC
 	return user, nil
 
 }
+
+func (s *UserService) LoginUser(email string, password string) (*models.UserLogged, error) {
+	// check if user exists in the db
+	user, err := s.userRepository.GetUserByEmailWithPassword(email)
+	if err != nil {
+		return nil, utils.NewCustomError(
+			utils.USER_NOT_FOUND_ERROR,
+			"user not found",
+		)
+	}
+	// check if the password is valid
+	valid, err := security.VerifyPassword(password, user.PasswordHash)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to verifyPassword")
+		return nil, utils.NewCustomError(
+			utils.USER_INVALID_PASSWORD_ERROR,
+			"invalid password",
+		)
+	}
+
+	if !valid {
+		return nil, utils.NewCustomError(
+			utils.USER_INVALID_PASSWORD_ERROR,
+			"invalid password",
+		)
+	}
+
+	// return the user logged
+	return &models.UserLogged{
+		BaseUser: models.BaseUser{
+			ID:       user.ID,
+			Username: user.Username,
+			Email:    user.Email,
+		},
+	}, nil
+}

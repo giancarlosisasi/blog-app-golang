@@ -91,3 +91,77 @@ func SetJWTCookie(c *fiber.Ctx, jwtConfig *JWTConfig, tokenString string) {
 
 	c.Cookie(cookie)
 }
+
+func ValidateJWT(config *JWTConfig, tokenString string) (*JWTClaims, error) {
+	if config.SecretKey == "" {
+		return nil, errors.New("JWT secret key is required")
+	}
+
+	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("invalid signing method")
+		}
+
+		return []byte(config.SecretKey), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(*JWTClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("invalid token")
+}
+
+func GetJWTFromCookie(c *fiber.Ctx, config *JWTConfig) (string, error) {
+	token := c.Cookies(config.CookieName)
+	if token == "" {
+		return "", errors.New("no token found in cookie")
+	}
+
+	return token, nil
+}
+
+// for logout
+func ClearJWTCookie(c *fiber.Ctx, config *JWTConfig) {
+	cookie := &fiber.Cookie{
+		Name:     config.CookieName,
+		Value:    "",
+		Path:     config.CookieDomain,
+		MaxAge:   -1, // expire immediately
+		Secure:   config.SecureOnly,
+		HTTPOnly: true,
+		SameSite: config.SameSite,
+	}
+
+	c.Cookie(cookie)
+}
+
+// AuthMiddleware creates a middleware to validate JWT from cookies
+func AuthMiddleware(config *JWTConfig) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		tokenString, err := GetJWTFromCookie(c, config)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		// validate token
+		claims, err := ValidateJWT(config, tokenString)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid token",
+			})
+		}
+
+		c.Locals("user_id", claims.UserID)
+		c.Locals("user_email", claims.Email)
+		c.Locals("user_username", claims.Username)
+
+		return c.Next()
+	}
+}

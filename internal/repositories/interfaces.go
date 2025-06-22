@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	database "blog-app/internal/database/queries"
 	"blog-app/internal/models"
 )
 
@@ -11,11 +10,16 @@ type UserRepository interface {
 		hashedPassword string,
 		username string,
 	) (*models.UserCreated, error)
-	LoginUser(
+
+	GetUserByEmail(
 		email string,
-		rawPassword string,
-	) (user *database.User, token string, err error)
+	) (user *models.BaseUser, err error)
+
 	CheckIfEmailExists(
 		email string,
 	) (bool, error)
+
+	GetUserByEmailWithPassword(
+		email string,
+	) (*models.UserWithPasswordHash, error)
 }
