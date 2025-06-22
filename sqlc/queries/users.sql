@@ -1,12 +1,12 @@
 -- name: CreateUser :one
 INSERT INTO users (
   email,
-  username,
-  password_hash
-) VALUES ($1, $2, $3) RETURNING *;
+  password_hash,
+  username
+) VALUES ($1, $2, $3) RETURNING id;
 
 -- name: GetUserByEmail :one
-SELECT * FROM users where email = $1 LIMIT 1;
+SELECT id FROM users where email = $1 LIMIT 1;
 
 -- name: GetUserByID :one
 SELECT * FROM users WHERE id = $1 LIMIT 1;

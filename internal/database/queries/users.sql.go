@@ -14,35 +14,22 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   email,
-  username,
-  password_hash
-) VALUES ($1, $2, $3) RETURNING id, email, username, password_hash, first_name, last_name, avatar_url, bio, is_active, email_verified, created_at, updated_at
+  password_hash,
+  username
+) VALUES ($1, $2, $3) RETURNING id
 `
 
 type CreateUserParams struct {
 	Email        string
-	Username     string
 	PasswordHash string
+	Username     string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.Username, arg.PasswordHash)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.Username,
-		&i.PasswordHash,
-		&i.FirstName,
-		&i.LastName,
-		&i.AvatarUrl,
-		&i.Bio,
-		&i.IsActive,
-		&i.EmailVerified,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.PasswordHash, arg.Username)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteUser = `-- name: DeleteUser :one
@@ -60,27 +47,14 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) (pgtype.UUID, 
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, username, password_hash, first_name, last_name, avatar_url, bio, is_active, email_verified, created_at, updated_at FROM users where email = $1 LIMIT 1
+SELECT id FROM users where email = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (pgtype.UUID, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.Username,
-		&i.PasswordHash,
-		&i.FirstName,
-		&i.LastName,
-		&i.AvatarUrl,
-		&i.Bio,
-		&i.IsActive,
-		&i.EmailVerified,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getUserByID = `-- name: GetUserByID :one

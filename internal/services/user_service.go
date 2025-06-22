@@ -1,8 +1,14 @@
 package services
 
 import (
-	"blog-app/internal/models"
+	"blog-app/internal/errors"
 	"blog-app/internal/repositories"
+	"blog-app/internal/security"
+	"blog-app/internal/validators"
+	"fmt"
+	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type UserService struct {
@@ -15,25 +21,80 @@ func NewUserService(userRepository repositories.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) RegisterUser(email string, password string) (*models.CreateUserResponse, error) {
+func (s *UserService) RegisterUser(email string, password string) (bool, error) {
 	// business logic
 	// email format validation
+	email = validators.SanitizeInput(email)
+	ok := validators.ValidateEmail(email)
+	log.Info().Msg(fmt.Sprintf("validation email result: %v", ok))
+	if !ok {
+		return false, errors.NewCustomError(
+			errors.CREATE_USER_INVALID_EMAIL_ERROR,
+			"invalid email",
+		)
+	}
 
+	password = validators.SanitizeInput(password)
 	// password validation (length, strength)
+	ok = validators.HasAtLeastOneCharacter(password)
+	if !ok {
+		return false, errors.NewCustomError(
+			errors.CREATE_USER_INVALID_PASSWORD_ERROR,
+			"the password must have at least on character",
+		)
+	}
+	ok = validators.ValidateLength(password, 6, 20)
+	if !ok {
+		return false, errors.NewCustomError(
+			errors.CREATE_USER_INVALID_PASSWORD_ERROR,
+			"password must be between 6 and 20 characters",
+		)
+	}
+	ok = validators.HasAtLeastOneNumber(password)
+	if !ok {
+		return false, errors.NewCustomError(
+			errors.CREATE_USER_INVALID_PASSWORD_ERROR,
+			"password must include at least one number",
+		)
+	}
 
 	// check if email is already in db using the repository checkEmailExists()
+	exists, err := s.userRepository.CheckIfEmailExists(email)
+	if err != nil {
+		return false, err
+	}
+
+	if exists {
+		return false, errors.NewCustomError(
+			errors.USER_ALREADY_EXISTS_IN_DB_ERROR,
+			"the user is already register",
+		)
+	}
 
 	// hash password
-
-	_, err := s.userRepository.RegisterUser(email, password)
+	hashed_password, err := security.HashPassword(password)
 	if err != nil {
-		return nil, err
+		log.Error().Err(err).Msg("failed to hash password")
+		return false, errors.NewCustomError(
+			errors.CANNOT_GET_USER_WITH_EMAIL_ERROR,
+			"error to process password",
+		)
 	}
 
-	resp := models.CreateUserResponse{
-		Success: true,
+	// create username
+	// the username by default will be the username plus the domain
+	username := strings.ReplaceAll(email, "@", "-")
+	username = strings.ReplaceAll(username, ".", "-")
+
+	_, err = s.userRepository.RegisterUser(email, hashed_password, username)
+	if err != nil {
+		log.Error().Err(err).Msg("userRepository: failed to register user")
+		return false, errors.NewCustomError(
+			errors.CREATE_USER_FAILED_TO_CREATE_ERROR,
+			"failed to register user",
+		)
 	}
 
-	return &resp, nil
+	return true, nil
 
 }
