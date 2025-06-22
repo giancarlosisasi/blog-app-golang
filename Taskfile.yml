@@ -18,13 +18,13 @@ tasks:
       - docker-compose -f docker/docker-compose.yml --env-file .env  up
   migrate:up:
     cmds:
-      - migrate -path ./migrations -database "" up
+      - migrate -path ./migrations -database "postgres://postgres:postgres@localhost:5433/blogdb?sslmode=disable" up
   migrate:down:
     cmds:
-      - migrate -path ./migrations -database "" down
+      - migrate -path ./migrations -database "postgres://postgres:postgres@localhost:5433/blogdb?sslmode=disable" down
   migrate:create:
     cmds:
-      - migrate create -ext sql -dir ./migrations $(name)
+      - migrate create -ext sql -dir ./migrations {{.name}}
   test:
     cmds:
       - go test -v ./...
