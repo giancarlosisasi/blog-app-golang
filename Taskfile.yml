@@ -30,7 +30,7 @@ tasks:
       - go test -v ./...
   sqlc:generate:
     cmds:
-      - sqlc generate
+      - sqlc generate -f sqlc/sqlc.yaml
   lint:
     cmds:
       - golangci-lint run
