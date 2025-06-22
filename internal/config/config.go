@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -19,7 +20,7 @@ func SetupConfig() error {
 		return err
 	}
 
-	fmt.Println("> Configuration correctly loaded.")
+	log.Info().Msg("> ✅ viper configuration loaded correctly")
 
 	return nil
 }

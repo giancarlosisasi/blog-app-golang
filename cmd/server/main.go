@@ -1,13 +1,13 @@
 package main
 
 import (
-	"blog-app/cmd/config"
-	"fmt"
+	"blog-app/internal/config"
+	"blog-app/internal/logger"
 )
 
 func main() {
-	// Use viper to setup config
+	// Viper
 	config.SetupConfig()
-
-	fmt.Println("Server is running!")
+	// Zerolog
+	logger.SetupLogger()
 }
