@@ -70,7 +70,6 @@ func SetupConfig() (*Config, error) {
 		JWTAccessExpiry:  jwtAccessExpiry,
 		JWTRefreshExpiry: jwtRefreshExpiry,
 	}
-	fmt.Printf("config values: %v", cfg)
 
 	return &cfg, nil
 }
