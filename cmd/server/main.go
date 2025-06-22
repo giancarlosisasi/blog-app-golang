@@ -4,6 +4,7 @@ import (
 	"blog-app/internal/config"
 	"blog-app/internal/database"
 	"blog-app/internal/logger"
+	"blog-app/internal/server"
 	"context"
 
 	"github.com/rs/zerolog/log"
@@ -20,15 +21,28 @@ func main() {
 	logger.SetupLogger()
 
 	// ========== DB ===============
-	ctx, conn, err := database.SetupDB(conf)
+	ctx, dbConn, err := database.SetupDB(conf)
 	if err != nil {
 		log.Fatal().Msg("> Can' connect to database")
 		return
 	}
-	if err := conn.Ping(ctx); err != nil {
+	if err := dbConn.Ping(ctx); err != nil {
 		log.Fatal().Msg("> Can' connect to database")
 		return
 	}
-	defer conn.Close(context.Background())
+	defer dbConn.Close(context.Background())
 	log.Info().Msg("> ✅ Success to connect to database")
+
+	// Setup stores
+
+	// Server
+	app, err := server.NewServer(ctx, dbConn, conf)
+
+	if err != nil {
+		log.Fatal().Err(err)
+		log.Fatal().Msg("the server has crashed!")
+
+		app.Shutdown()
+
+	}
 }
