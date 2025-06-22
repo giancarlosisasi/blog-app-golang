@@ -49,7 +49,7 @@ func SetupRoutes(
 	userService := services.NewUserService(userRepository)
 
 	// handlers
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, config)
 
 	// user endpoints
 	v1.Post("/register", userHandler.Register)

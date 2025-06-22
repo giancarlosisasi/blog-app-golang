@@ -16,7 +16,7 @@ INSERT INTO users (
   email,
   password_hash,
   username
-) VALUES ($1, $2, $3) RETURNING id
+) VALUES ($1, $2, $3) RETURNING id, email, username
 `
 
 type CreateUserParams struct {
@@ -25,11 +25,17 @@ type CreateUserParams struct {
 	Username     string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgtype.UUID, error) {
+type CreateUserRow struct {
+	ID       pgtype.UUID
+	Email    string
+	Username string
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.PasswordHash, arg.Username)
-	var id pgtype.UUID
-	err := row.Scan(&id)
-	return id, err
+	var i CreateUserRow
+	err := row.Scan(&i.ID, &i.Email, &i.Username)
+	return i, err
 }
 
 const deleteUser = `-- name: DeleteUser :one

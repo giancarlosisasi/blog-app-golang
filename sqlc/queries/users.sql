@@ -3,7 +3,7 @@ INSERT INTO users (
   email,
   password_hash,
   username
-) VALUES ($1, $2, $3) RETURNING id;
+) VALUES ($1, $2, $3) RETURNING id, email, username;
 
 -- name: GetUserByEmail :one
 SELECT id FROM users where email = $1 LIMIT 1;

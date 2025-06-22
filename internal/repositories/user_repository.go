@@ -2,10 +2,10 @@ package repositories
 
 import (
 	database "blog-app/internal/database/queries"
+	"blog-app/internal/models"
 	"context"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type UserPostgresRepository struct {
@@ -20,7 +20,7 @@ func NewUserPostgresRepository(ctx context.Context, dbConn *pgx.Conn) *UserPostg
 	}
 }
 
-func (r *UserPostgresRepository) RegisterUser(email string, hashedPassword string, username string) (pgtype.UUID, error) {
+func (r *UserPostgresRepository) RegisterUser(email string, hashedPassword string, username string) (*models.UserCreated, error) {
 	u, err := database.New(r.dbConn).CreateUser(r.ctx, database.CreateUserParams{
 		Email:        email,
 		PasswordHash: hashedPassword,
@@ -28,11 +28,14 @@ func (r *UserPostgresRepository) RegisterUser(email string, hashedPassword strin
 	})
 
 	if err != nil {
-		var id pgtype.UUID
-		return id, err
+		return nil, err
 	}
 
-	return u, nil
+	return &models.UserCreated{
+		ID:       u.ID,
+		Email:    u.Email,
+		Username: u.Username,
+	}, nil
 }
 
 func (r *UserPostgresRepository) LoginUser(email, rawPassword string) (user *database.User, token string, err error) {

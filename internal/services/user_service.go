@@ -1,6 +1,7 @@
 package services
 
 import (
+	"blog-app/internal/models"
 	"blog-app/internal/repositories"
 	"blog-app/internal/security"
 	"blog-app/internal/utils"
@@ -20,13 +21,13 @@ func NewUserService(userRepository repositories.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) RegisterUser(email string, password string) (bool, error) {
+func (s *UserService) RegisterUser(email string, password string) (*models.UserCreated, error) {
 	// business logic
 	// email format validation
 	email = validators.SanitizeInput(email)
 	ok := validators.ValidateEmail(email)
 	if !ok {
-		return false, utils.NewCustomError(
+		return nil, utils.NewCustomError(
 			utils.CREATE_USER_INVALID_EMAIL_ERROR,
 			"invalid email",
 		)
@@ -36,21 +37,21 @@ func (s *UserService) RegisterUser(email string, password string) (bool, error) 
 	// password validation (length, strength)
 	ok = validators.HasAtLeastOneCharacter(password)
 	if !ok {
-		return false, utils.NewCustomError(
+		return nil, utils.NewCustomError(
 			utils.CREATE_USER_INVALID_PASSWORD_ERROR,
 			"the password must have at least on character",
 		)
 	}
 	ok = validators.ValidateLength(password, 6, 20)
 	if !ok {
-		return false, utils.NewCustomError(
+		return nil, utils.NewCustomError(
 			utils.CREATE_USER_INVALID_PASSWORD_ERROR,
 			"password must be between 6 and 20 characters",
 		)
 	}
 	ok = validators.HasAtLeastOneNumber(password)
 	if !ok {
-		return false, utils.NewCustomError(
+		return nil, utils.NewCustomError(
 			utils.CREATE_USER_INVALID_PASSWORD_ERROR,
 			"password must include at least one number",
 		)
@@ -59,11 +60,11 @@ func (s *UserService) RegisterUser(email string, password string) (bool, error) 
 	// check if email is already in db using the repository checkEmailExists()
 	exists, err := s.userRepository.CheckIfEmailExists(email)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	if exists {
-		return false, utils.NewCustomError(
+		return nil, utils.NewCustomError(
 			utils.USER_ALREADY_EXISTS_IN_DB_ERROR,
 			"the user is already register",
 		)
@@ -73,7 +74,7 @@ func (s *UserService) RegisterUser(email string, password string) (bool, error) 
 	hashed_password, err := security.HashPassword(password)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to hash password")
-		return false, utils.NewCustomError(
+		return nil, utils.NewCustomError(
 			utils.CANNOT_GET_USER_WITH_EMAIL_ERROR,
 			"error to process password",
 		)
@@ -84,15 +85,15 @@ func (s *UserService) RegisterUser(email string, password string) (bool, error) 
 	username := strings.ReplaceAll(email, "@", "-")
 	username = strings.ReplaceAll(username, ".", "-")
 
-	_, err = s.userRepository.RegisterUser(email, hashed_password, username)
+	user, err := s.userRepository.RegisterUser(email, hashed_password, username)
 	if err != nil {
 		log.Error().Err(err).Msg("userRepository: failed to register user")
-		return false, utils.NewCustomError(
+		return nil, utils.NewCustomError(
 			utils.CREATE_USER_FAILED_TO_CREATE_ERROR,
 			"failed to register user",
 		)
 	}
 
-	return true, nil
+	return user, nil
 
 }

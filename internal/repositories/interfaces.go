@@ -2,8 +2,7 @@ package repositories
 
 import (
 	database "blog-app/internal/database/queries"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"blog-app/internal/models"
 )
 
 type UserRepository interface {
@@ -11,7 +10,7 @@ type UserRepository interface {
 		email string,
 		hashedPassword string,
 		username string,
-	) (pgtype.UUID, error)
+	) (*models.UserCreated, error)
 	LoginUser(
 		email string,
 		rawPassword string,

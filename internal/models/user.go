@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type UserResponse struct {
@@ -40,6 +41,13 @@ type LoginUserRequest struct {
 	Password string `json:"password"`
 }
 
+type UserCreated struct {
+	ID       pgtype.UUID `json:"id"`
+	Email    string      `json:"email"`
+	Username string      `json:"username"`
+}
+
 type CreateUserResponse struct {
-	Success bool `json:"success"`
+	Success bool         `json:"success"`
+	Data    *UserCreated `json:"data"`
 }

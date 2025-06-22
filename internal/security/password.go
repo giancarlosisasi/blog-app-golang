@@ -20,7 +20,7 @@ type PasswordConfig struct {
 	KeyLength   uint32 // Length of generated keys in bytes
 }
 
-func DefaultConfig() *PasswordConfig {
+func PasswordDefaultConfig() *PasswordConfig {
 	return &PasswordConfig{
 		Memory:      64 * 1024, // 64MB
 		Iterations:  3,
@@ -33,7 +33,7 @@ func DefaultConfig() *PasswordConfig {
 // securely hashes a password using Argon2id
 // returns the encoded hash string that can be stores in database
 func HashPassword(password string) (string, error) {
-	return HashPasswordWithConfig(password, DefaultConfig())
+	return HashPasswordWithConfig(password, PasswordDefaultConfig())
 }
 
 func HashPasswordWithConfig(password string, passwordConfig *PasswordConfig) (string, error) {
