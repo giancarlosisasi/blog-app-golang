@@ -45,6 +45,44 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const deleteUser = `-- name: DeleteUser :one
+UPDATE users
+SET
+  is_active = false
+WHERE id = $1 AND is_active = true
+RETURNING id
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, deleteUser, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, email, username, password_hash, first_name, last_name, avatar_url, bio, is_active, email_verified, created_at, updated_at FROM users where email = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.PasswordHash,
+		&i.FirstName,
+		&i.LastName,
+		&i.AvatarUrl,
+		&i.Bio,
+		&i.IsActive,
+		&i.EmailVerified,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, email, username, password_hash, first_name, last_name, avatar_url, bio, is_active, email_verified, created_at, updated_at FROM users WHERE id = $1 LIMIT 1
 `
@@ -64,6 +102,143 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.IsActive,
 		&i.EmailVerified,
 		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateIsActive = `-- name: UpdateIsActive :one
+UPDATE users
+SET
+  is_active = $1
+WHERE id = $2
+RETURNING id, email, username, first_name, last_name, avatar_url, bio, updated_at
+`
+
+type UpdateIsActiveParams struct {
+	IsActive pgtype.Bool
+	ID       pgtype.UUID
+}
+
+type UpdateIsActiveRow struct {
+	ID        pgtype.UUID
+	Email     string
+	Username  string
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	AvatarUrl pgtype.Text
+	Bio       pgtype.Text
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateIsActive(ctx context.Context, arg UpdateIsActiveParams) (UpdateIsActiveRow, error) {
+	row := q.db.QueryRow(ctx, updateIsActive, arg.IsActive, arg.ID)
+	var i UpdateIsActiveRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.AvatarUrl,
+		&i.Bio,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updatePassword = `-- name: UpdatePassword :one
+UPDATE users
+SET
+  password_hash = $1
+WHERE id = $2 AND is_active = true
+RETURNING id, email, username, first_name, last_name, avatar_url, bio, updated_at
+`
+
+type UpdatePasswordParams struct {
+	PasswordHash string
+	ID           pgtype.UUID
+}
+
+type UpdatePasswordRow struct {
+	ID        pgtype.UUID
+	Email     string
+	Username  string
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	AvatarUrl pgtype.Text
+	Bio       pgtype.Text
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) (UpdatePasswordRow, error) {
+	row := q.db.QueryRow(ctx, updatePassword, arg.PasswordHash, arg.ID)
+	var i UpdatePasswordRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.AvatarUrl,
+		&i.Bio,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET
+  username = $1,
+  first_name = $2,
+  last_name = $3,
+  avatar_url = $4,
+  bio = $5,
+  updated_at = NOW()
+WHERE id = $6
+  AND is_active = true
+RETURNING id, email, username, first_name, last_name, avatar_url, bio, updated_at
+`
+
+type UpdateUserParams struct {
+	Username  string
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	AvatarUrl pgtype.Text
+	Bio       pgtype.Text
+	ID        pgtype.UUID
+}
+
+type UpdateUserRow struct {
+	ID        pgtype.UUID
+	Email     string
+	Username  string
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	AvatarUrl pgtype.Text
+	Bio       pgtype.Text
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.Username,
+		arg.FirstName,
+		arg.LastName,
+		arg.AvatarUrl,
+		arg.Bio,
+		arg.ID,
+	)
+	var i UpdateUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.AvatarUrl,
+		&i.Bio,
 		&i.UpdatedAt,
 	)
 	return i, err

@@ -1,7 +1,10 @@
-package server
+package routes
 
 import (
 	"blog-app/internal/config"
+	"blog-app/internal/handlers"
+	"blog-app/internal/repositories"
+	"blog-app/internal/services"
 	"context"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func addRoutes(
+func SetupRoutes(
 	ctx context.Context,
 	srv *fiber.App,
 	config *config.Config,
@@ -24,7 +27,6 @@ func addRoutes(
 	})
 
 	api := srv.Group("/api")
-
 	v1 := api.Group("/v1")
 
 	// DB health check
@@ -39,4 +41,17 @@ func addRoutes(
 	v1.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("v1 api")
 	})
+
+	// storages (a.k.a repositories)
+	userRepository := repositories.NewUserPostgresRepository(ctx, dbConn)
+
+	// services
+	userService := services.NewUserService(userRepository)
+
+	// handlers
+	userHandler := handlers.NewUserHandler(userService)
+
+	// user endpoints
+	v1.Post("/register", userHandler.Register)
+	v1.Post("/login", userHandler.Login)
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"blog-app/internal/config"
+	"blog-app/internal/routes"
 	"context"
 	"fmt"
 	"time"
@@ -34,7 +35,7 @@ func NewServer(
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
-	addRoutes(
+	routes.SetupRoutes(
 		ctx,
 		srv,
 		conf,
