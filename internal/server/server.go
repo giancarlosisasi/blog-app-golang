@@ -4,6 +4,7 @@ import (
 	"blog-app/internal/config"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -21,8 +22,10 @@ func NewServer(
 ) (*fiber.App, error) {
 	srv := fiber.New(fiber.Config{
 		// https://docs.gofiber.io/guide/faster-fiber
-		JSONEncoder: sonic.Marshal,
-		JSONDecoder: sonic.Unmarshal,
+		JSONEncoder:  sonic.Marshal,
+		JSONDecoder:  sonic.Unmarshal,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	})
 
 	// =============== CORS ================
