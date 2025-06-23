@@ -25,6 +25,14 @@ tasks:
   migrate:create:
     cmds:
       - migrate create -ext sql -dir ./internal/database/migrations {{.name}}
+  seed:
+    desc: Seed the database with initial roles, permissions, and sample data
+    cmds:
+      - go run cmd/seed/main.go
+  seed:clear:
+    desc: Clear existing data and seed the database
+    cmds:
+      - go run cmd/seed/main.go --clear
   test:
     cmds:
       - go test -v ./...
