@@ -8,6 +8,16 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Category struct {
+	ID          pgtype.UUID
+	Name        string
+	Slug        string
+	Description pgtype.Text
+	Color       pgtype.Text
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
 type Permission struct {
 	ID          pgtype.UUID
 	Name        string
@@ -15,6 +25,30 @@ type Permission struct {
 	Action      string
 	Description pgtype.Text
 	CreatedAt   pgtype.Timestamptz
+}
+
+type Post struct {
+	ID               pgtype.UUID
+	Title            string
+	Slug             string
+	Content          string
+	Excerpt          pgtype.Text
+	FeaturedImageUrl pgtype.Text
+	Status           pgtype.Text
+	AuthorID         pgtype.UUID
+	PublishedAt      pgtype.Timestamptz
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+}
+
+type PostCategory struct {
+	PostID     pgtype.UUID
+	CategoryID pgtype.UUID
+}
+
+type PostTag struct {
+	PostID pgtype.UUID
+	TagID  pgtype.UUID
 }
 
 type Role struct {
@@ -27,6 +61,14 @@ type Role struct {
 type RolePermission struct {
 	RoleID       pgtype.UUID
 	PermissionID pgtype.UUID
+}
+
+type Tag struct {
+	ID        pgtype.UUID
+	Name      string
+	Slug      string
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }
 
 type User struct {
@@ -42,6 +84,18 @@ type User struct {
 	EmailVerified pgtype.Bool
 	CreatedAt     pgtype.Timestamptz
 	UpdatedAt     pgtype.Timestamptz
+}
+
+type UserProfile struct {
+	ID         pgtype.UUID
+	UserID     pgtype.UUID
+	FirstName  pgtype.Text
+	LastName   pgtype.Text
+	Bio        pgtype.Text
+	AvatarUrl  pgtype.Text
+	WebsiteUrl pgtype.Text
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
 }
 
 type UserRole struct {
