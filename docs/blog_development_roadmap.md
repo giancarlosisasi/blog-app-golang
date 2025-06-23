@@ -177,7 +177,7 @@ CREATE TABLE posts (
     featured_image_url TEXT,
     status VARCHAR(20) DEFAULT 'draft', -- 'draft', 'published', 'archived'
     author_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+    -- category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
     published_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -188,6 +188,12 @@ CREATE TABLE post_tags (
     post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
     tag_id UUID REFERENCES tags(id) ON DELETE CASCADE,
     PRIMARY KEY (post_id, tag_id)
+);
+
+CREATE TABLE post_categories (
+    post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+    category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
+    PRIMARY KEY (post_id, category_id)
 );
 ```
 
