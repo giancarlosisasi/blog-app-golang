@@ -55,6 +55,12 @@ func clearExistingData(ctx context.Context, conn *pgx.Conn) error {
 		"DELETE FROM role_permissions",
 		"DELETE FROM permissions",
 		"DELETE FROM roles",
+		"DELETE FROM post_tags",
+		"DELETE FROM post_categories",
+		"DELETE FROM categories",
+		"DELETE FROM tags",
+		"DELETE FROM posts",
+		"DELETE FROM users",
 	}
 
 	for _, query := range queries {

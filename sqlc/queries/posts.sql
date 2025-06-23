@@ -52,3 +52,17 @@ JOIN post_tags pt ON p.id = pt.post_id
 JOIN tags t ON pt.tag_id = t.id
 WHERE t.slug = $1
 ORDER BY p.updated_at DESC;
+
+-- name: AssignCategoryToPost :exec
+INSERT INTO post_categories (post_id, category_id)
+VALUES ($1, $2);
+
+-- name: AssignTagToPost :exec
+INSERT INTO post_tags (post_id, tag_id)
+VALUES ($1, $2);
+
+-- name: UnassignCategoryFromPost :exec
+DELETE FROM post_categories WHERE post_id = $1 AND category_id = $2;
+
+-- name: UnassignTagFromPost :exec
+DELETE FROM post_tags WHERE post_id = $1 AND tag_id = $2;

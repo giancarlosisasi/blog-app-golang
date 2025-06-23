@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	database "blog-app/internal/database/queries"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -43,6 +45,17 @@ func SeedData(ctx context.Context, conn *pgx.Conn) error {
 	err = createSampleUsersAndRoles(ctx, tx, roles)
 	if err != nil {
 		return fmt.Errorf("failed to create sample users and roles: %w", err)
+	}
+
+	// Create categories
+	_, err = createCategories(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to create categories: %w", err)
+	}
+
+	_, err = createTags(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to create tags %w", err)
 	}
 
 	// Commit the transaction
@@ -367,6 +380,97 @@ func GetUserPermissions(ctx context.Context, conn *pgx.Conn, userID uuid.UUID) (
 	}
 
 	return permissions, nil
+}
+
+func createCategories(ctx context.Context, tx pgx.Tx) (map[string]pgtype.UUID, error) {
+	categories := map[string]pgtype.UUID{}
+
+	categoriesData := []database.CreateCategoryParams{
+		{
+			Name:        "Tech",
+			Slug:        "tech",
+			Description: pgtype.Text{String: "Technology and programming articles", Valid: true},
+			Color:       pgtype.Text{String: "blue", Valid: true},
+		},
+		{
+			Name:        "Lifestyle",
+			Slug:        "lifestyle",
+			Description: pgtype.Text{String: "Lifestyle and personal development", Valid: true},
+			Color:       pgtype.Text{String: "green", Valid: true},
+		},
+		{
+			Name:        "Travel",
+			Slug:        "travel",
+			Description: pgtype.Text{String: "Travel experiences and tips", Valid: true},
+			Color:       pgtype.Text{String: "orange", Valid: true},
+		},
+		{
+			Name:        "Food",
+			Slug:        "food",
+			Description: pgtype.Text{String: "Cooking and food-related content", Valid: true},
+			Color:       pgtype.Text{String: "red", Valid: true},
+		},
+	}
+
+	queries := database.New(tx)
+
+	for _, category := range categoriesData {
+		// err := tx.QueryRow(ctx, `
+		// 	INSERT INTO categories (name, slug, description, color)
+		// 	VALUES ($1, $2, $3, $4)
+		// 	RETURNING id
+		// `, category.Name, category.Slug, category.Description, category.Color).Scan(&categoryID)
+		c, err := queries.CreateCategory(ctx, category)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create category %s: %w", category.Name, err)
+		}
+		categories[category.Slug] = c.ID
+		idv, err := c.ID.Value()
+		if err != nil {
+			log.Printf("Invalid uuid: %s\n", idv)
+			continue
+		}
+		log.Printf("Created category: %s (ID: %s)", category.Name, idv)
+	}
+
+	return categories, nil
+}
+
+func createTags(ctx context.Context, tx pgx.Tx) (map[string]pgtype.UUID, error) {
+	tags := map[string]pgtype.UUID{}
+
+	tagsData := []database.CreateTagParams{
+		{
+			Name: "Tag1",
+			Slug: "tag1",
+		},
+		{
+			Name: "Tag2",
+			Slug: "tag2",
+		},
+		{
+			Name: "Tag3",
+			Slug: "tag3",
+		},
+	}
+
+	queries := database.New(tx)
+
+	for _, tag := range tagsData {
+		t, err := queries.CreateTag(ctx, tag)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create the tag %s: %w", tag.Name, err)
+		}
+		tags[t.Slug] = t.ID
+		idv, err := t.ID.Value()
+		if err != nil {
+			log.Printf("invalid uuid for tag %s: %v", tag.Name, err)
+			continue
+		}
+		log.Printf("Created tag: %s (ID: %s)", t.Name, idv)
+	}
+
+	return tags, nil
 }
 
 // Permission represents a permission in the system

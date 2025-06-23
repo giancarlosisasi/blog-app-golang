@@ -11,6 +11,36 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const assignCategoryToPost = `-- name: AssignCategoryToPost :exec
+INSERT INTO post_categories (post_id, category_id)
+VALUES ($1, $2)
+`
+
+type AssignCategoryToPostParams struct {
+	PostID     pgtype.UUID
+	CategoryID pgtype.UUID
+}
+
+func (q *Queries) AssignCategoryToPost(ctx context.Context, arg AssignCategoryToPostParams) error {
+	_, err := q.db.Exec(ctx, assignCategoryToPost, arg.PostID, arg.CategoryID)
+	return err
+}
+
+const assignTagToPost = `-- name: AssignTagToPost :exec
+INSERT INTO post_tags (post_id, tag_id)
+VALUES ($1, $2)
+`
+
+type AssignTagToPostParams struct {
+	PostID pgtype.UUID
+	TagID  pgtype.UUID
+}
+
+func (q *Queries) AssignTagToPost(ctx context.Context, arg AssignTagToPostParams) error {
+	_, err := q.db.Exec(ctx, assignTagToPost, arg.PostID, arg.TagID)
+	return err
+}
+
 const createPost = `-- name: CreatePost :one
 
 INSERT INTO posts (title, slug, content, excerpt, featured_image_url, status, author_id, published_at, created_at, updated_at)
@@ -381,6 +411,34 @@ func (q *Queries) ListPublishedPosts(ctx context.Context) ([]Post, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const unassignCategoryFromPost = `-- name: UnassignCategoryFromPost :exec
+DELETE FROM post_categories WHERE post_id = $1 AND category_id = $2
+`
+
+type UnassignCategoryFromPostParams struct {
+	PostID     pgtype.UUID
+	CategoryID pgtype.UUID
+}
+
+func (q *Queries) UnassignCategoryFromPost(ctx context.Context, arg UnassignCategoryFromPostParams) error {
+	_, err := q.db.Exec(ctx, unassignCategoryFromPost, arg.PostID, arg.CategoryID)
+	return err
+}
+
+const unassignTagFromPost = `-- name: UnassignTagFromPost :exec
+DELETE FROM post_tags WHERE post_id = $1 AND tag_id = $2
+`
+
+type UnassignTagFromPostParams struct {
+	PostID pgtype.UUID
+	TagID  pgtype.UUID
+}
+
+func (q *Queries) UnassignTagFromPost(ctx context.Context, arg UnassignTagFromPostParams) error {
+	_, err := q.db.Exec(ctx, unassignTagFromPost, arg.PostID, arg.TagID)
+	return err
 }
 
 const updatePost = `-- name: UpdatePost :one
