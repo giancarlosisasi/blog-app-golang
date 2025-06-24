@@ -7,13 +7,12 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type JWTClaims struct {
-	UserID   pgtype.UUID `json:"user_id"`
-	Email    string      `json:"email"`
-	Username string      `json:"username"`
+	UserID   string `json:"user_id"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
@@ -47,7 +46,7 @@ func JWTDefaultConfig(appConf *config.Config) *JWTConfig {
 	}
 }
 
-func GenerateJWT(jwtConfig *JWTConfig, userID pgtype.UUID, email string, username string) (string, error) {
+func GenerateJWT(jwtConfig *JWTConfig, userID string, email string, username string) (string, error) {
 	if jwtConfig.SecretKey == "" {
 		return "", errors.New("JWT secret key is required")
 	}
@@ -138,30 +137,4 @@ func ClearJWTCookie(c *fiber.Ctx, config *JWTConfig) {
 	}
 
 	c.Cookie(cookie)
-}
-
-// AuthMiddleware creates a middleware to validate JWT from cookies
-func AuthMiddleware(config *JWTConfig) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		tokenString, err := GetJWTFromCookie(c, config)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Unauthorized",
-			})
-		}
-
-		// validate token
-		claims, err := ValidateJWT(config, tokenString)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "invalid token",
-			})
-		}
-
-		c.Locals("user_id", claims.UserID)
-		c.Locals("user_email", claims.Email)
-		c.Locals("user_username", claims.Username)
-
-		return c.Next()
-	}
 }

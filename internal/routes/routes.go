@@ -3,7 +3,9 @@ package routes
 import (
 	"blog-app/internal/config"
 	"blog-app/internal/handlers"
+	"blog-app/internal/middleware"
 	"blog-app/internal/repositories"
+	"blog-app/internal/security"
 	"blog-app/internal/services"
 	"context"
 
@@ -17,9 +19,7 @@ func SetupRoutes(
 	srv *fiber.App,
 	config *config.Config,
 	dbConn *pgx.Conn,
-	// stores
-
-	// services
+	jwtConfig *security.JWTConfig,
 ) {
 
 	srv.Get("/health-check", func(c *fiber.Ctx) error {
@@ -44,14 +44,28 @@ func SetupRoutes(
 
 	// storages (a.k.a repositories)
 	userRepository := repositories.NewUserPostgresRepository(ctx, dbConn)
+	postRepository := repositories.NewPostPostgresRepository(ctx, dbConn)
 
 	// services
 	userService := services.NewUserService(userRepository)
+	postService := services.NewPostService(postRepository)
 
 	// handlers
 	userHandler := handlers.NewUserHandler(userService, config)
+	postHandler := handlers.NewPostHandler(postService, config)
 
 	// user endpoints
 	v1.Post("/register", userHandler.Register)
 	v1.Post("/login", userHandler.Login)
+
+	// posts endpoints
+	// -- protected, Only the author can create, or update/delete his own posts
+	v1.Post("/posts", middleware.AuthMiddleware(jwtConfig), postHandler.CreatePost)
+	v1.Put("/posts/:id", middleware.AuthMiddleware(jwtConfig), postHandler.UpdatePostByID)
+	v1.Delete("/posts/:id", middleware.AuthMiddleware(jwtConfig), postHandler.DeletePostByID)
+
+	v1.Get("/posts/s/:slug", postHandler.GetPostBySlug)
+	v1.Get("/posts/:slug", postHandler.GetPostByID)
+	v1.Get("/posts/:authorId", postHandler.GetPostsByAuthorID)
+
 }

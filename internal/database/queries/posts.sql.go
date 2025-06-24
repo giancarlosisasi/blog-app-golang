@@ -488,3 +488,17 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 	)
 	return i, err
 }
+
+const updatePostStatus = `-- name: UpdatePostStatus :exec
+UPDATE posts SET status = $2 WHERE id = $1
+`
+
+type UpdatePostStatusParams struct {
+	ID     pgtype.UUID
+	Status pgtype.Text
+}
+
+func (q *Queries) UpdatePostStatus(ctx context.Context, arg UpdatePostStatusParams) error {
+	_, err := q.db.Exec(ctx, updatePostStatus, arg.ID, arg.Status)
+	return err
+}

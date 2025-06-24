@@ -66,3 +66,6 @@ DELETE FROM post_categories WHERE post_id = $1 AND category_id = $2;
 
 -- name: UnassignTagFromPost :exec
 DELETE FROM post_tags WHERE post_id = $1 AND tag_id = $2;
+
+-- name: UpdatePostStatus :exec
+UPDATE posts SET status = $2 WHERE id = $1;

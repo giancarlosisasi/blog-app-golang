@@ -3,6 +3,7 @@ package server
 import (
 	"blog-app/internal/config"
 	"blog-app/internal/routes"
+	"blog-app/internal/security"
 	"context"
 	"fmt"
 	"time"
@@ -17,9 +18,7 @@ func NewServer(
 	ctx context.Context,
 	dbConn *pgx.Conn,
 	conf *config.Config,
-	// stores
-
-	// services
+	jwtConfig *security.JWTConfig,
 ) (*fiber.App, error) {
 	srv := fiber.New(fiber.Config{
 		// https://docs.gofiber.io/guide/faster-fiber
@@ -41,6 +40,7 @@ func NewServer(
 		srv,
 		conf,
 		dbConn,
+		jwtConfig,
 	)
 
 	err := srv.Listen(fmt.Sprintf(":%s", conf.Port))

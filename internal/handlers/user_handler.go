@@ -45,7 +45,7 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 
 	tokenString, err := security.GenerateJWT(
 		jwtConfig,
-		u.ID,
+		u.ID.String(),
 		u.Email,
 		u.Username,
 	)
@@ -83,7 +83,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 
 	// generate and set jwt token cookie
 	jwtConfig := security.JWTDefaultConfig(h.appConfig)
-	jwtToken, err := security.GenerateJWT(jwtConfig, user.ID, user.Email, user.Username)
+	jwtToken, err := security.GenerateJWT(jwtConfig, user.ID.String(), user.Email, user.Username)
 	if err != nil {
 		log.Error().Err(err).Msg("error to generate jwt token")
 		return c.Status(fiber.StatusBadRequest).JSON(utils.NewCustomError(

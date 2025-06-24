@@ -4,6 +4,7 @@ import (
 	"blog-app/internal/config"
 	"blog-app/internal/database"
 	"blog-app/internal/logger"
+	"blog-app/internal/security"
 	"blog-app/internal/server"
 	"context"
 
@@ -17,6 +18,10 @@ func main() {
 		log.Fatal().Msg("> error to load the configuration.")
 		return
 	}
+
+	jwtConfig := security.JWTDefaultConfig(
+		conf,
+	)
 	// ============== Zerolog =================
 	logger.SetupLogger()
 
@@ -36,7 +41,7 @@ func main() {
 	// Setup stores
 
 	// Server
-	app, err := server.NewServer(ctx, dbConn, conf)
+	app, err := server.NewServer(ctx, dbConn, conf, jwtConfig)
 
 	if err != nil {
 		log.Fatal().Err(err)

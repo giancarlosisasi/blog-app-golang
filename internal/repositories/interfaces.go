@@ -23,3 +23,24 @@ type UserRepository interface {
 		email string,
 	) (*models.UserWithPasswordHash, error)
 }
+
+type PostRepository interface {
+	CreatePost(
+		post models.Post,
+	) (*models.Post, error)
+	GetPostBySlug(
+		slug string,
+	) (*models.Post, error)
+	GetPostByID(
+		id string,
+	) (*models.Post, error)
+	GetPostsByAuthorID(
+		authorId string,
+	) ([]*models.Post, error)
+	UpdatePostByID(
+		id string,
+	) (*models.Post, error)
+	DeletePostByID(
+		id string,
+	) error
+}
