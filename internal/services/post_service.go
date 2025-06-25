@@ -38,11 +38,21 @@ func (s *PostService) GetPostBySlug(slug string) (*models.Post, error) {
 }
 
 func (s *PostService) GetPostByID(id string) (*models.Post, error) {
-	return nil, nil
+	post, err := s.postRepository.GetPostByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return post, nil
 }
 
-func (s *PostService) GetPostsByAuthorID(authorId string) ([]*models.Post, error) {
-	return nil, nil
+func (s *PostService) GetPostsByAuthorID(authorId string) ([]models.Post, error) {
+	posts, err := s.postRepository.GetPostsByAuthorID(authorId)
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }
 
 func (s *PostService) UpdatePostByID(id string) (*models.Post, error) {

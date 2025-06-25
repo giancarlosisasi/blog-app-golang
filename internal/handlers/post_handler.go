@@ -109,6 +109,13 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 func (h *PostHandler) GetPostBySlug(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 
+	if slug == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(utils.NewCustomError(
+			utils.BAD_REQUEST_ERROR,
+			"slug param is missing",
+		))
+	}
+
 	post, err := h.postService.GetPostBySlug(slug)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(utils.NewCustomError(
@@ -121,11 +128,42 @@ func (h *PostHandler) GetPostBySlug(c *fiber.Ctx) error {
 }
 
 func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
-	return nil
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(
+			utils.NewCustomError(utils.BAD_REQUEST_ERROR, "id param is missing"),
+		)
+	}
+
+	log.Info().Msg(fmt.Sprintf("id is %s", id))
+
+	post, err := h.postService.GetPostByID(id)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(utils.NewCustomError(
+			utils.NOT_FOUND_ERROR,
+			fmt.Sprintf("post with id '%s' not found", id),
+		))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true, "post": post})
 }
 
 func (h *PostHandler) GetPostsByAuthorID(c *fiber.Ctx) error {
-	return nil
+	authorId := c.Params("authorId")
+	if authorId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(
+			utils.NewCustomError(utils.BAD_REQUEST_ERROR, "authorId param is missing"),
+		)
+	}
+	posts, err := h.postService.GetPostsByAuthorID(authorId)
+	if err != nil {
+		log.Error().Err(err).Msg(fmt.Sprintf("cannot get posts by author id: %s", authorId))
+		return c.Status(fiber.StatusNotFound).JSON(
+			utils.NewCustomError(utils.NOT_FOUND_ERROR, fmt.Sprintf("posts not found for author id: %s", authorId)),
+		)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true, "posts": posts})
 }
 
 func (h *PostHandler) UpdatePostByID(c *fiber.Ctx) error {

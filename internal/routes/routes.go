@@ -64,8 +64,8 @@ func SetupRoutes(
 	v1.Put("/posts/:id", middleware.AuthMiddleware(jwtConfig), postHandler.UpdatePostByID)
 	v1.Delete("/posts/:id", middleware.AuthMiddleware(jwtConfig), postHandler.DeletePostByID)
 
-	v1.Get("/posts/s/:slug", postHandler.GetPostBySlug)
-	v1.Get("/posts/:slug", postHandler.GetPostByID)
-	v1.Get("/posts/:authorId", postHandler.GetPostsByAuthorID)
+	v1.Get("/posts/slug/:slug", postHandler.GetPostBySlug)
+	v1.Get("/posts/:id", postHandler.GetPostByID)
+	v1.Get("/authors/:authorId/posts", postHandler.GetPostsByAuthorID)
 
 }

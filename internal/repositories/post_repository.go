@@ -4,6 +4,7 @@ import (
 	database "blog-app/internal/database/queries"
 	"blog-app/internal/models"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -111,11 +112,74 @@ func (r *PostPostgresRepository) GetPostBySlug(slug string) (*models.Post, error
 }
 
 func (r *PostPostgresRepository) GetPostByID(id string) (*models.Post, error) {
-	return nil, nil
+	queries := database.New(r.dbConn)
+	postUUID, err := uuid.Parse(id)
+	if err != nil {
+		log.Error().Err(err).Msg(fmt.Sprintf("cannot convert post id to uuid, the id is: %s", id))
+		return nil, err
+	}
+	uid := pgtype.UUID{
+		Bytes: postUUID,
+		Valid: true,
+	}
+
+	post, err := queries.GetPostByID(r.ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+
+	idDb := post.ID.String()
+
+	return &models.Post{
+		ID:              &idDb,
+		Title:           post.Title,
+		Slug:            post.Slug,
+		Content:         post.Content,
+		Excerpt:         post.Excerpt.String,
+		FeatureImageURL: &post.FeaturedImageUrl.String,
+		Status:          post.Status.String,
+		PublishedAt:     &post.PublishedAt.Time,
+		AuthorID:        post.AuthorID.String(),
+	}, nil
+
 }
 
-func (r *PostPostgresRepository) GetPostsByAuthorID(authorId string) ([]*models.Post, error) {
-	return nil, nil
+func (r *PostPostgresRepository) GetPostsByAuthorID(authorId string) ([]models.Post, error) {
+	authorUUID, err := uuid.Parse(authorId)
+	if err != nil {
+		log.Error().Err(err).Msg(fmt.Sprintf("cannot convert author id of value '%s' to uuid", authorId))
+		return nil, errors.New(fmt.Sprintf("repository - getPostByAuthorId: invalid uuid: %s", authorUUID))
+	}
+	aid := pgtype.UUID{
+		Bytes: authorUUID,
+		Valid: true,
+	}
+
+	postsFromDB, err := database.New(r.dbConn).GetPostsByAuthorID(r.ctx, aid)
+	if err != nil {
+		return nil, err
+	}
+
+	var posts []models.Post
+	for _, post := range postsFromDB {
+		id := post.ID.String()
+		p := models.Post{
+			ID:              &id,
+			Title:           post.Title,
+			Content:         post.Content,
+			Slug:            post.Slug,
+			Excerpt:         post.Excerpt.String,
+			FeatureImageURL: &post.FeaturedImageUrl.String,
+			Status:          post.Status.String,
+			PublishedAt:     &post.PublishedAt.Time,
+			AuthorID:        authorId,
+		}
+
+		posts = append(posts, p)
+	}
+
+	return posts, nil
+
 }
 
 func (r *PostPostgresRepository) UpdatePostByID(id string) (*models.Post, error) {

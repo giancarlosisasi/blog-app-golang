@@ -36,7 +36,7 @@ type PostRepository interface {
 	) (*models.Post, error)
 	GetPostsByAuthorID(
 		authorId string,
-	) ([]*models.Post, error)
+	) ([]models.Post, error)
 	UpdatePostByID(
 		id string,
 	) (*models.Post, error)
