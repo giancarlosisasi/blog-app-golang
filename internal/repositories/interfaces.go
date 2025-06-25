@@ -38,7 +38,9 @@ type PostRepository interface {
 		authorId string,
 	) ([]models.Post, error)
 	UpdatePostByID(
+		authorId string,
 		id string,
+		data *models.UpdatePostData,
 	) (*models.Post, error)
 	DeletePostByID(
 		id string,

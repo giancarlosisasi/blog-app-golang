@@ -55,8 +55,13 @@ func (s *PostService) GetPostsByAuthorID(authorId string) ([]models.Post, error)
 	return posts, nil
 }
 
-func (s *PostService) UpdatePostByID(id string) (*models.Post, error) {
-	return nil, nil
+func (s *PostService) UpdatePostByID(authorId string, id string, data *models.UpdatePostData) (*models.Post, error) {
+	post, err := s.postRepository.UpdatePostByID(authorId, id, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return post, nil
 }
 
 func (s *PostService) DeletePostByID(id string) error {

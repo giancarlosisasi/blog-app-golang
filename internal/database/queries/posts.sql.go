@@ -130,6 +130,34 @@ func (q *Queries) GetPostByID(ctx context.Context, id pgtype.UUID) (Post, error)
 	return i, err
 }
 
+const getPostByIDAndAuthorID = `-- name: GetPostByIDAndAuthorID :one
+SELECT id, title, slug, content, excerpt, featured_image_url, status, author_id, published_at, created_at, updated_at FROM posts WHERE id = $1 AND author_id = $2
+`
+
+type GetPostByIDAndAuthorIDParams struct {
+	ID       pgtype.UUID
+	AuthorID pgtype.UUID
+}
+
+func (q *Queries) GetPostByIDAndAuthorID(ctx context.Context, arg GetPostByIDAndAuthorIDParams) (Post, error) {
+	row := q.db.QueryRow(ctx, getPostByIDAndAuthorID, arg.ID, arg.AuthorID)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Slug,
+		&i.Content,
+		&i.Excerpt,
+		&i.FeaturedImageUrl,
+		&i.Status,
+		&i.AuthorID,
+		&i.PublishedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getPostBySlug = `-- name: GetPostBySlug :one
 SELECT id, title, slug, content, excerpt, featured_image_url, status, author_id, published_at, created_at, updated_at FROM posts WHERE slug = $1
 `

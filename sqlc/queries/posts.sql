@@ -69,3 +69,6 @@ DELETE FROM post_tags WHERE post_id = $1 AND tag_id = $2;
 
 -- name: UpdatePostStatus :exec
 UPDATE posts SET status = $2 WHERE id = $1;
+
+-- name: GetPostByIDAndAuthorID :one
+SELECT * FROM posts WHERE id = $1 AND author_id = $2;

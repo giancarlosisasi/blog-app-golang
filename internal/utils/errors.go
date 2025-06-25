@@ -1,5 +1,7 @@
 package utils
 
+import "errors"
+
 const (
 	CREATE_USER_INVALID_PASSWORD_ERROR = iota
 	CREATE_USER_INVALID_EMAIL_ERROR
@@ -15,6 +17,9 @@ const (
 	BAD_REQUEST_ERROR
 	NOT_FOUND_ERROR
 )
+
+var ErrInvalidUUID = errors.New("invalid UUID format")
+var ErrResourceNotFoundInDB = errors.New("resource not found in db")
 
 type AppError struct {
 	Code int    `json:"code"`

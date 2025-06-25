@@ -6,6 +6,7 @@ import (
 	"blog-app/internal/models"
 	"blog-app/internal/services"
 	"blog-app/internal/utils"
+	"errors"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -51,7 +52,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		))
 	}
 
-	if rawPost.FeatureImageURL == nil {
+	if rawPost.FeaturedImageURL == nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(utils.NewCustomError(
 			utils.CREATE_POST_INVALID_BODY_ERROR,
 			"missing feature image url",
@@ -87,11 +88,11 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	postSlug := slug.Make(rawPost.Title) + "-" + utils.GenerateRandomString(4)
 
 	post, err := h.postService.CreatePost(models.Post{
-		Title:           rawPost.Title,
-		Content:         rawPost.Content,
-		Excerpt:         rawPost.Excerpt,
-		FeatureImageURL: rawPost.FeatureImageURL,
-		Status:          rawPost.Status,
+		Title:            rawPost.Title,
+		Content:          rawPost.Content,
+		Excerpt:          rawPost.Excerpt,
+		FeaturedImageURL: rawPost.FeaturedImageURL,
+		Status:           rawPost.Status,
 		// created by us
 		Slug:     postSlug,
 		AuthorID: authorID,
@@ -167,7 +168,82 @@ func (h *PostHandler) GetPostsByAuthorID(c *fiber.Ctx) error {
 }
 
 func (h *PostHandler) UpdatePostByID(c *fiber.Ctx) error {
-	return nil
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(
+			utils.NewCustomError(
+				utils.BAD_REQUEST_ERROR,
+				"id param is missing",
+			),
+		)
+	}
+
+	if len(c.Body()) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(
+			utils.NewCustomError(
+				utils.BAD_REQUEST_ERROR,
+				"request body is required",
+			),
+		)
+	}
+
+	var updatePostData models.UpdatePostData
+	err := c.BodyParser(&updatePostData)
+	if err != nil {
+		log.Error().Err(err).Msg("updatePostByID handler: error to parse body request")
+		return c.Status(fiber.StatusBadRequest).JSON(
+			utils.NewCustomError(
+				utils.BAD_REQUEST_ERROR,
+				"cannot process data",
+			),
+		)
+	}
+
+	if updatePostData.IsEmpty() {
+		return c.Status(fiber.StatusBadRequest).JSON(
+			utils.NewCustomError(
+				utils.BAD_REQUEST_ERROR,
+				"request body cannot be empty",
+			),
+		)
+	}
+
+	// if updatePostData == (models.UpdatePostData{}) {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(
+	// 		utils.NewCustomError(
+	// 			utils.BAD_REQUEST_ERROR,
+	// 			"request body cannot be empty",
+	// 		),
+	// 	)
+	// }
+
+	currentUser, ok := middleware.GetUserContext(c)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "not authenticated",
+		})
+	}
+
+	post, err := h.postService.UpdatePostByID(currentUser.ID, id, &updatePostData)
+	if err != nil {
+		if errors.Is(err, utils.ErrResourceNotFoundInDB) {
+			return c.Status(fiber.StatusBadRequest).JSON(
+				utils.NewCustomError(
+					utils.NOT_FOUND_ERROR,
+					fmt.Sprintf("post with id '%s' not found.", id),
+				),
+			)
+		}
+
+		log.Error().Err(err).Msg(fmt.Sprintf("cannot update post with id '%s'", id))
+		return c.Status(fiber.StatusInternalServerError).JSON(utils.NewCustomError(
+			utils.INTERNAL_SERVER_ERROR,
+			"internal server error",
+		))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true, "post": post})
+
 }
 
 func (h *PostHandler) DeletePostByID(c *fiber.Ctx) error {
