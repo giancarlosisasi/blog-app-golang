@@ -89,7 +89,25 @@ func (r *PostPostgresRepository) CreatePost(post models.Post) (*models.Post, err
 }
 
 func (r *PostPostgresRepository) GetPostBySlug(slug string) (*models.Post, error) {
-	return nil, nil
+	queries := database.New(r.dbConn)
+	post, err := queries.GetPostBySlug(r.ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+
+	id := post.ID.String()
+
+	return &models.Post{
+		ID:              &id,
+		Title:           post.Title,
+		Slug:            post.Slug,
+		Content:         post.Content,
+		Excerpt:         post.Excerpt.String,
+		FeatureImageURL: &post.FeaturedImageUrl.String,
+		Status:          post.Status.String,
+		PublishedAt:     &post.PublishedAt.Time,
+		AuthorID:        post.AuthorID.String(),
+	}, nil
 }
 
 func (r *PostPostgresRepository) GetPostByID(id string) (*models.Post, error) {

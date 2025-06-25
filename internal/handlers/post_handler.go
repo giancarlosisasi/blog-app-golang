@@ -107,7 +107,17 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 }
 
 func (h *PostHandler) GetPostBySlug(c *fiber.Ctx) error {
-	return nil
+	slug := c.Params("slug")
+
+	post, err := h.postService.GetPostBySlug(slug)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(utils.NewCustomError(
+			utils.INTERNAL_SERVER_ERROR,
+			"error to get the post",
+		))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true, "post": post})
 }
 
 func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {

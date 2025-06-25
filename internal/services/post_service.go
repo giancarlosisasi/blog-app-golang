@@ -3,6 +3,8 @@ package services
 import (
 	"blog-app/internal/models"
 	"blog-app/internal/repositories"
+
+	"github.com/rs/zerolog/log"
 )
 
 type PostService struct {
@@ -25,7 +27,14 @@ func (s *PostService) CreatePost(post models.Post) (*models.Post, error) {
 }
 
 func (s *PostService) GetPostBySlug(slug string) (*models.Post, error) {
-	return nil, nil
+	post, err := s.postRepository.GetPostBySlug(slug)
+
+	if err != nil {
+		log.Error().Err(err).Msg("postRepository.GetPostBySlug")
+		return nil, err
+	}
+
+	return post, nil
 }
 
 func (s *PostService) GetPostByID(id string) (*models.Post, error) {
