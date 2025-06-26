@@ -97,3 +97,12 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		Success: true,
 	})
 }
+
+func (h *UserHandler) Logout(c *fiber.Ctx) error {
+	jwtConfig := security.JWTDefaultConfig(h.appConfig)
+	security.ClearJWTCookie(c, jwtConfig)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+	})
+}

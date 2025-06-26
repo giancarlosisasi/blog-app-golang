@@ -55,8 +55,9 @@ func SetupRoutes(
 	postHandler := handlers.NewPostHandler(postService, config)
 
 	// user endpoints
-	v1.Post("/register", userHandler.Register)
-	v1.Post("/login", userHandler.Login)
+	v1.Post("/auth/register", userHandler.Register)
+	v1.Post("/auth/login", userHandler.Login)
+	v1.Post("/auth/logout", userHandler.Logout)
 
 	// posts endpoints
 	// -- protected, Only the author can create, or update/delete his own posts
