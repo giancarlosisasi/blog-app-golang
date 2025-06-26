@@ -66,7 +66,6 @@ func (r *PostPostgresRepository) CreatePost(post models.Post) (*models.Post, err
 	}
 
 	postCreated, err := queries.CreatePost(r.ctx, postData)
-	log.Info().Msg(fmt.Sprintf("postData is: %+v", postData))
 	if err != nil {
 		return nil, err
 	}

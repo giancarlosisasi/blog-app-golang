@@ -36,8 +36,6 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		))
 	}
 
-	log.Debug().Msg(fmt.Sprintf("rawPost value: %+v", rawPost))
-
 	if rawPost.Title == "" {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(utils.NewCustomError(
 			utils.CREATE_POST_INVALID_BODY_ERROR,
