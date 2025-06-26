@@ -12,7 +12,7 @@ SELECT id, email, username FROM users where email = $1 LIMIT 1;
 SELECT id, email, username, password_hash FROM users WHERE email = $1 LIMIT 1;
 
 -- name: GetUserByID :one
-SELECT * FROM users WHERE id = $1 LIMIT 1;
+SELECT id, email, username, first_name, last_name, avatar_url, bio, is_active, created_at, updated_at FROM users WHERE id = $1 LIMIT 1;
 
 -- name: UpdateUser :one
 UPDATE users

@@ -15,6 +15,10 @@ type UserRepository interface {
 		email string,
 	) (user *models.BaseUser, err error)
 
+	GetUserByID(
+		id string,
+	) (user *models.User, err error)
+
 	CheckIfEmailExists(
 		email string,
 	) (bool, error)

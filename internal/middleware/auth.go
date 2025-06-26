@@ -25,7 +25,7 @@ func AuthMiddleware(config *security.JWTConfig) fiber.Handler {
 		}
 
 		// validate token
-		claims, err := security.ValidateJWT(config, tokenString)
+		claims, err := security.ValidateJWT(tokenString, config)
 		if err != nil {
 			statusCode, message := handleJWTError(err)
 			return c.Status(statusCode).JSON(fiber.Map{
@@ -51,6 +51,19 @@ func handleJWTError(err error) (statusCode int, message string) {
 		return fiber.StatusUnauthorized, "Authentication token has expired"
 	case errors.Is(err, utils.ErrAuthTokenInvalid):
 		return fiber.StatusUnauthorized, "Invalid authentication token"
+	default:
+		return fiber.StatusInternalServerError, "Internal server error"
+	}
+}
+
+func HandleRefreshJWTError(err error) (statusCode int, message string) {
+	switch {
+	case errors.Is(err, utils.ErrAuthRefreshTokenMissing):
+		return fiber.StatusUnauthorized, "Authentication refresh token is required"
+	case errors.Is(err, utils.ErrAuthRefreshTokenExpired):
+		return fiber.StatusUnauthorized, "Authentication refresh token has expired"
+	case errors.Is(err, utils.ErrAuthRefreshTokenInvalid):
+		return fiber.StatusUnauthorized, "Invalid refresh authentication token"
 	default:
 		return fiber.StatusInternalServerError, "Internal server error"
 	}

@@ -21,6 +21,19 @@ type UserResponse struct {
 	// no password hash here!
 }
 
+type User struct {
+	ID        string
+	Email     string
+	Username  string
+	FirstName *string
+	LastName  *string
+	AvatarUrl *string
+	Bio       *string
+	IsActive  bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 // only public info
 type UserProfile struct {
 	ID        uuid.UUID `json:"id"`
@@ -46,6 +59,7 @@ type BaseUser struct {
 	Email    string      `json:"email"`
 	Username string      `json:"username"`
 }
+
 type UserCreated struct {
 	BaseUser
 }

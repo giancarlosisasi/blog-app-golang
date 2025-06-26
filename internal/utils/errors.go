@@ -23,6 +23,9 @@ var ErrResourceNotFoundInDB = errors.New("resource not found in db")
 var ErrAuthTokenExpired = errors.New("jwt token expired")
 var ErrAuthTokenInvalid = errors.New("jwt token is invalid")
 var ErrAuthTokenMissing = errors.New("jwt token is missing")
+var ErrAuthRefreshTokenExpired = errors.New("refresh jwt token expired")
+var ErrAuthRefreshTokenMissing = errors.New("refresh jwt token is missing")
+var ErrAuthRefreshTokenInvalid = errors.New("refresh jwt token is invalid")
 
 type AppError struct {
 	Code int    `json:"code"`

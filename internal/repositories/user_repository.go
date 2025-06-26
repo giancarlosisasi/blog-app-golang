@@ -3,9 +3,12 @@ package repositories
 import (
 	database "blog-app/internal/database/queries"
 	"blog-app/internal/models"
+	"blog-app/internal/utils"
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type UserPostgresRepository struct {
@@ -59,6 +62,35 @@ func (r *UserPostgresRepository) GetUserByEmail(email string) (*models.BaseUser,
 		ID:       user.ID,
 		Email:    user.Email,
 		Username: user.Username,
+	}, nil
+}
+
+func (r *UserPostgresRepository) GetUserByID(id string) (*models.User, error) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, utils.ErrInvalidUUID
+	}
+
+	uuid := pgtype.UUID{
+		Valid: true,
+		Bytes: uid,
+	}
+	user, err := database.New(r.dbConn).GetUserByID(r.ctx, uuid)
+	if err != nil {
+		return nil, utils.ErrResourceNotFoundInDB
+	}
+
+	return &models.User{
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		Username:  user.Username,
+		FirstName: &user.FirstName.String,
+		LastName:  &user.LastName.String,
+		AvatarUrl: &user.AvatarUrl.String,
+		Bio:       &user.Bio.String,
+		IsActive:  user.IsActive.Bool,
+		CreatedAt: user.CreatedAt.Time,
+		UpdatedAt: user.UpdatedAt.Time,
 	}, nil
 }
 

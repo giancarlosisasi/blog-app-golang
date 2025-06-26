@@ -133,3 +133,12 @@ func (s *UserService) LoginUser(email string, password string) (*models.UserLogg
 		},
 	}, nil
 }
+
+func (s *UserService) GetUserByID(id string) (*models.User, error) {
+	user, err := s.userRepository.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
