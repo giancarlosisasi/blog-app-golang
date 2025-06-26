@@ -106,3 +106,8 @@ func (h *UserHandler) Logout(c *fiber.Ctx) error {
 		"success": true,
 	})
 }
+
+func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
+
+	return nil
+}

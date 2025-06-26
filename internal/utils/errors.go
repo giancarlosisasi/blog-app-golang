@@ -20,6 +20,9 @@ const (
 
 var ErrInvalidUUID = errors.New("invalid UUID format")
 var ErrResourceNotFoundInDB = errors.New("resource not found in db")
+var ErrAuthTokenExpired = errors.New("jwt token expired")
+var ErrAuthTokenInvalid = errors.New("jwt token is invalid")
+var ErrAuthTokenMissing = errors.New("jwt token is missing")
 
 type AppError struct {
 	Code int    `json:"code"`

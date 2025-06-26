@@ -2,11 +2,13 @@ package security
 
 import (
 	"blog-app/internal/config"
+	"blog-app/internal/utils"
 	"errors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog/log"
 )
 
 type JWTClaims struct {
@@ -96,7 +98,11 @@ func ValidateJWT(config *JWTConfig, tokenString string) (*JWTClaims, error) {
 		return nil, errors.New("JWT secret key is required")
 	}
 
-	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+	if tokenString == "" {
+		return nil, utils.ErrAuthTokenMissing
+	}
+
+	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
 		}
@@ -105,20 +111,37 @@ func ValidateJWT(config *JWTConfig, tokenString string) (*JWTClaims, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		log.Error().Err(err).Msg("error to parse with claims")
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			log.Error().Err(err).Msg("jwt token parseWithClaims: token is expired")
+			return nil, utils.ErrAuthTokenExpired
+		}
+
+		if errors.Is(err, jwt.ErrTokenMalformed) ||
+			errors.Is(err, jwt.ErrTokenSignatureInvalid) ||
+			errors.Is(err, jwt.ErrTokenInvalidClaims) {
+			log.Error().Err(err).Msg("jwt token parseWithClaims: token is invalid (malformed or invalid signature or invalid claims)")
+			return nil, utils.ErrAuthTokenInvalid
+		}
+
+		return nil, utils.ErrAuthTokenInvalid
 	}
 
 	if claims, ok := token.Claims.(*JWTClaims); ok && token.Valid {
+		if claims.ExpiresAt != nil && claims.ExpiresAt.Time.Before(time.Now()) {
+			log.Error().Err(err).Msg("jwt token claims: token is expired")
+			return nil, utils.ErrAuthTokenExpired
+		}
 		return claims, nil
 	}
 
-	return nil, errors.New("invalid token")
+	return nil, utils.ErrAuthTokenInvalid
 }
 
 func GetJWTFromCookie(c *fiber.Ctx, config *JWTConfig) (string, error) {
 	token := c.Cookies(config.CookieName)
 	if token == "" {
-		return "", errors.New("no token found in cookie")
+		return "", utils.ErrAuthTokenMissing
 	}
 
 	return token, nil
