@@ -235,3 +235,35 @@ func (h *UserHandler) UpdateUserProfile(c *fiber.Ctx) error {
 		"data": profile,
 	})
 }
+
+func (u *UserHandler) ChangePassword(c *fiber.Ctx) error {
+	currentUser, ok := middleware.GetUserContext(c)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": utils.ErrUserSessionNotFound.Error(),
+		})
+	}
+
+	// get the body data
+	var updatePasswordData models.UpdateUserPasswordHash
+	err := c.BodyParser(&updatePasswordData)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "can't process body data",
+		})
+	}
+	if updatePasswordData.CurrentPassword == "" || updatePasswordData.NewPassword == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "missing current or new password",
+		})
+	}
+
+	err = u.userService.UpdateUserPasswordById(currentUser.ID, updatePasswordData.CurrentPassword, updatePasswordData.NewPassword)
+	if err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})
+}

@@ -27,6 +27,8 @@ type UserRepository interface {
 		email string,
 	) (*models.UserWithPasswordHash, error)
 	UpdateUserProfileById(id string, updateProfile models.UserProfile) (*models.UserProfile, error)
+	UpdateUserPasswordHashById(id string, passwordHash string) error
+	GetUserPasswordHashById(id string) (string, error)
 }
 
 type PostRepository interface {

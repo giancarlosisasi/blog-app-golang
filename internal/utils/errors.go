@@ -26,6 +26,12 @@ var ErrAuthTokenMissing = errors.New("jwt token is missing")
 var ErrAuthRefreshTokenExpired = errors.New("refresh jwt token expired")
 var ErrAuthRefreshTokenMissing = errors.New("refresh jwt token is missing")
 var ErrAuthRefreshTokenInvalid = errors.New("refresh jwt token is invalid")
+var ErrUserInvalidPasswordMustHaveOneChar = errors.New("password must have at least one character")
+var ErrUserInvalidPasswordLength = errors.New("password must be between 6 and 20 characters")
+var ErrUserInvalidPasswordMustHaveOneNumber = errors.New("password must include at least one number")
+var ErrorUserIncorrectPassword = errors.New("incorrect password")
+var ErrUserCannotHashThePassword = errors.New("error to process the password string")
+var ErrUserSessionNotFound = errors.New("user session not found")
 
 type AppError struct {
 	Code int    `json:"code"`

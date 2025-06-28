@@ -127,6 +127,22 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDR
 	return i, err
 }
 
+const getUserPasswordHashById = `-- name: GetUserPasswordHashById :one
+SELECT id, password_hash FROM users WHERE id = $1 LIMIT 1
+`
+
+type GetUserPasswordHashByIdRow struct {
+	ID           pgtype.UUID
+	PasswordHash string
+}
+
+func (q *Queries) GetUserPasswordHashById(ctx context.Context, id pgtype.UUID) (GetUserPasswordHashByIdRow, error) {
+	row := q.db.QueryRow(ctx, getUserPasswordHashById, id)
+	var i GetUserPasswordHashByIdRow
+	err := row.Scan(&i.ID, &i.PasswordHash)
+	return i, err
+}
+
 const updateIsActive = `-- name: UpdateIsActive :one
 UPDATE users
 SET
@@ -154,46 +170,6 @@ type UpdateIsActiveRow struct {
 func (q *Queries) UpdateIsActive(ctx context.Context, arg UpdateIsActiveParams) (UpdateIsActiveRow, error) {
 	row := q.db.QueryRow(ctx, updateIsActive, arg.IsActive, arg.ID)
 	var i UpdateIsActiveRow
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.Username,
-		&i.FirstName,
-		&i.LastName,
-		&i.AvatarUrl,
-		&i.Bio,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const updatePassword = `-- name: UpdatePassword :one
-UPDATE users
-SET
-  password_hash = $1
-WHERE id = $2 AND is_active = true
-RETURNING id, email, username, first_name, last_name, avatar_url, bio, updated_at
-`
-
-type UpdatePasswordParams struct {
-	PasswordHash string
-	ID           pgtype.UUID
-}
-
-type UpdatePasswordRow struct {
-	ID        pgtype.UUID
-	Email     string
-	Username  string
-	FirstName pgtype.Text
-	LastName  pgtype.Text
-	AvatarUrl pgtype.Text
-	Bio       pgtype.Text
-	UpdatedAt pgtype.Timestamptz
-}
-
-func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) (UpdatePasswordRow, error) {
-	row := q.db.QueryRow(ctx, updatePassword, arg.PasswordHash, arg.ID)
-	var i UpdatePasswordRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -248,6 +224,46 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateU
 		arg.ID,
 	)
 	var i UpdateUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.AvatarUrl,
+		&i.Bio,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserPasswordById = `-- name: UpdateUserPasswordById :one
+UPDATE users
+SET
+  password_hash = $1
+WHERE id = $2 AND is_active = true
+RETURNING id, email, username, first_name, last_name, avatar_url, bio, updated_at
+`
+
+type UpdateUserPasswordByIdParams struct {
+	PasswordHash string
+	ID           pgtype.UUID
+}
+
+type UpdateUserPasswordByIdRow struct {
+	ID        pgtype.UUID
+	Email     string
+	Username  string
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	AvatarUrl pgtype.Text
+	Bio       pgtype.Text
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateUserPasswordById(ctx context.Context, arg UpdateUserPasswordByIdParams) (UpdateUserPasswordByIdRow, error) {
+	row := q.db.QueryRow(ctx, updateUserPasswordById, arg.PasswordHash, arg.ID)
+	var i UpdateUserPasswordByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,

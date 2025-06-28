@@ -5,10 +5,12 @@ import (
 	"blog-app/internal/models"
 	"blog-app/internal/utils"
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog/log"
 )
 
 type UserPostgresRepository struct {
@@ -137,6 +139,10 @@ func (r UserPostgresRepository) UpdateUserProfileById(id string, updateProfile m
 	}
 
 	user, err := database.New(r.dbConn).UpdateUser(r.ctx, profile)
+	if err != nil {
+		log.Error().Err(err).Msg("userPostgresRepository - UpdateUserProfileById - UpdateUser: Failed to update user")
+		return nil, err
+	}
 
 	return &models.UserProfile{
 		ID:        id,
@@ -145,4 +151,38 @@ func (r UserPostgresRepository) UpdateUserProfileById(id string, updateProfile m
 		Bio:       &user.Bio.String,
 		AvatarURL: &user.AvatarUrl.String,
 	}, nil
+}
+
+func (r *UserPostgresRepository) UpdateUserPasswordHashById(id string, passwordHash string) error {
+	uuid, err := utils.FromStrToPGUUID(id)
+	if err != nil {
+		return utils.ErrInvalidUUID
+	}
+
+	params := database.UpdateUserPasswordByIdParams{
+		ID:           uuid,
+		PasswordHash: passwordHash,
+	}
+	_, err = database.New(r.dbConn).UpdateUserPasswordById(r.ctx, params)
+	if err != nil {
+		log.Error().Err(err).Msg("userPostgresRepository - changePasswordById: error to update the password")
+		return errors.New("error when trying to update the password")
+	}
+
+	return nil
+}
+
+func (r *UserPostgresRepository) GetUserPasswordHashById(id string) (passwordHash string, err error) {
+	uuid, err := utils.FromStrToPGUUID(id)
+	if err != nil {
+		return "", utils.ErrInvalidUUID
+	}
+
+	u, err := database.New(r.dbConn).GetUserPasswordHashById(r.ctx, uuid)
+	if err != nil {
+		log.Error().Err(err).Msg("userPostgresRepository - GetUserPasswordHashById: error to get the password hash")
+		return "", errors.New("error to get the password hash")
+	}
+
+	return u.PasswordHash, nil
 }

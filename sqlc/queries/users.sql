@@ -11,6 +11,9 @@ SELECT id, email, username FROM users where email = $1 LIMIT 1;
 -- name: GetUserByEmailWithPassword :one
 SELECT id, email, username, password_hash FROM users WHERE email = $1 LIMIT 1;
 
+-- name: GetUserPasswordHashById :one
+SELECT id, password_hash FROM users WHERE id = $1 LIMIT 1;
+
 -- name: GetUserByID :one
 SELECT id, email, username, first_name, last_name, avatar_url, bio, is_active, created_at, updated_at FROM users WHERE id = $1 LIMIT 1;
 
@@ -33,7 +36,7 @@ SET
 WHERE id = $2
 RETURNING id, email, username, first_name, last_name, avatar_url, bio, updated_at;
 
--- name: UpdatePassword :one
+-- name: UpdateUserPasswordById :one
 UPDATE users
 SET
   password_hash = $1

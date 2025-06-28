@@ -151,3 +151,48 @@ func (s *UserService) UpdateUserProfileById(id string, updateProfile models.User
 
 	return profile, nil
 }
+
+func (s *UserService) UpdateUserPasswordById(id string, currentPassword string, newPassword string) error {
+	// check if the newPassword has valid format
+	newPassword = validators.SanitizeInput(newPassword)
+	ok := validators.HasAtLeastOneCharacter(newPassword)
+	if !ok {
+		return utils.ErrUserInvalidPasswordMustHaveOneChar
+	}
+	ok = validators.ValidateLength(newPassword, 6, 20)
+	if !ok {
+		return utils.ErrUserInvalidPasswordLength
+	}
+	ok = validators.HasAtLeastOneNumber(newPassword)
+	if !ok {
+		return utils.ErrUserInvalidPasswordMustHaveOneNumber
+	}
+
+	// check if the user has the correct password
+	passwordHash, err := s.userRepository.GetUserPasswordHashById(id)
+	if err != nil {
+		return err
+	}
+
+	valid, err := security.VerifyPassword(currentPassword, passwordHash)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to verify password")
+		return utils.ErrorUserIncorrectPassword
+	}
+
+	if !valid {
+		return utils.ErrorUserIncorrectPassword
+	}
+
+	// if the password is correct, hash it
+	newPasswordHash, err := security.HashPassword(newPassword)
+	if err != nil {
+		log.Error().Err(err).Msg("userService - hashPassword: failed to hash password")
+		return utils.ErrUserCannotHashThePassword
+	}
+
+	// save the new password hash to the db
+	err = s.userRepository.UpdateUserPasswordHashById(id, newPasswordHash)
+
+	return err
+}
