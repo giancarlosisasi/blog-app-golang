@@ -59,6 +59,7 @@ func SetupRoutes(
 	v1.Post("/auth/login", userHandler.Login)
 	v1.Post("/auth/logout", userHandler.Logout)
 	v1.Post("/auth/refresh", userHandler.RefreshToken)
+	v1.Get("/profile", middleware.AuthMiddleware(jwtConfig), userHandler.GetUserProfile)
 
 	// posts endpoints
 	// -- protected, Only the author can create, or update/delete his own posts

@@ -9,7 +9,7 @@ Complete API specification for the production-ready multi-author blog platform w
 
 ### **Public Authentication Endpoints**
 
-#### **POST** `/api/v1/auth/register`
+#### **POST** `/api/v1/auth/register` ✅
 **Description**: Register a new user account  
 **Access**: Public  
 **Request Body**:
@@ -38,7 +38,7 @@ Complete API specification for the production-ready multi-author blog platform w
 }
 ```
 
-#### **POST** `/api/v1/auth/login`
+#### **POST** `/api/v1/auth/login` ✅
 **Description**: Authenticate user and set JWT cookies  
 **Access**: Public  
 **Request Body**:
@@ -59,12 +59,12 @@ Complete API specification for the production-ready multi-author blog platform w
 }
 ```
 
-#### **POST** `/api/v1/auth/logout`
+#### **POST** `/api/v1/auth/logout` ✅
 **Description**: Clear authentication cookies  
 **Access**: Public  
 **Response**: `200 OK`
 
-#### **POST** `/api/v1/auth/refresh`
+#### **POST** `/api/v1/auth/refresh` ✅
 **Description**: Refresh access token using refresh token  
 **Access**: Public (requires refresh token cookie)  
 **Response**: `200 OK` + new access token cookie
@@ -75,7 +75,7 @@ Complete API specification for the production-ready multi-author blog platform w
 
 ### **Protected User Endpoints**
 
-#### **GET** `/api/v1/profile`
+#### **GET** `/api/v1/profile` 
 **Description**: Get current user's profile  
 **Access**: Authenticated users  
 **Response**: `200 OK`

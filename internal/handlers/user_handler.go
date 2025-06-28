@@ -172,3 +172,32 @@ func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
 		"success": true,
 	})
 }
+
+func (h *UserHandler) GetUserProfile(c *fiber.Ctx) error {
+	user, ok := middleware.GetUserContext(c)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "no user session",
+		})
+
+	}
+
+	userDb, err := h.userService.GetUserByID(user.ID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "user not found",
+		})
+	}
+
+	if !userDb.IsActive {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "user not found",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"user":    userDb,
+	})
+
+}

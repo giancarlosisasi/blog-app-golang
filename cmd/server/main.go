@@ -7,7 +7,6 @@ import (
 	"blog-app/internal/security"
 	"blog-app/internal/server"
 	"context"
-
 	"github.com/rs/zerolog/log"
 )
 
