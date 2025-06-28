@@ -75,7 +75,7 @@ Complete API specification for the production-ready multi-author blog platform w
 
 ### **Protected User Endpoints**
 
-#### **GET** `/api/v1/profile` 
+#### **GET** `/api/v1/profile` ✅
 **Description**: Get current user's profile  
 **Access**: Authenticated users  
 **Response**: `200 OK`
