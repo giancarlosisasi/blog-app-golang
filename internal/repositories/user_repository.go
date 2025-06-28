@@ -109,3 +109,40 @@ func (r *UserPostgresRepository) GetUserByEmailWithPassword(email string) (*mode
 		},
 	}, nil
 }
+
+func (r UserPostgresRepository) UpdateUserProfileById(id string, updateProfile models.UserProfile) (*models.UserProfile, error) {
+	uuid, err := utils.FromStrToPGUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	profile := database.UpdateUserParams{
+		ID: uuid,
+	}
+
+	if updateProfile.AvatarURL != nil && *updateProfile.AvatarURL != "" {
+		profile.AvatarUrl = utils.FromStrToPGText(*updateProfile.AvatarURL)
+	}
+
+	if updateProfile.FirstName != nil && *updateProfile.FirstName != "" {
+		profile.FirstName = utils.FromStrToPGText(*updateProfile.FirstName)
+	}
+
+	if updateProfile.LastName != nil && *updateProfile.LastName != "" {
+		profile.LastName = utils.FromStrToPGText(*updateProfile.LastName)
+	}
+
+	if updateProfile.Bio != nil && *updateProfile.Bio != "" {
+		profile.Bio = utils.FromStrToPGText(*updateProfile.Bio)
+	}
+
+	user, err := database.New(r.dbConn).UpdateUser(r.ctx, profile)
+
+	return &models.UserProfile{
+		ID:        id,
+		FirstName: &user.FirstName.String,
+		LastName:  &user.LastName.String,
+		Bio:       &user.Bio.String,
+		AvatarURL: &user.AvatarUrl.String,
+	}, nil
+}

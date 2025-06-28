@@ -8,7 +8,7 @@ import (
 func FromStrToUUID(value string) (uuid.UUID, error) {
 	uid, err := uuid.Parse(value)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, ErrInvalidUUID
 	}
 	return uid, nil
 }

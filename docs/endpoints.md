@@ -96,7 +96,7 @@ Complete API specification for the production-ready multi-author blog platform w
 }
 ```
 
-#### **PUT** `/api/v1/profile`
+#### **PUT** `/api/v1/profile` ✅
 **Description**: Update current user's profile  
 **Access**: Authenticated users  
 **Request Body**:

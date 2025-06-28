@@ -210,19 +210,17 @@ func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
-  username = $1,
-  first_name = $2,
-  last_name = $3,
-  avatar_url = $4,
-  bio = $5,
+  first_name = $1,
+  last_name = $2,
+  avatar_url = $3,
+  bio = $4,
   updated_at = NOW()
-WHERE id = $6
+WHERE id = $5
   AND is_active = true
 RETURNING id, email, username, first_name, last_name, avatar_url, bio, updated_at
 `
 
 type UpdateUserParams struct {
-	Username  string
 	FirstName pgtype.Text
 	LastName  pgtype.Text
 	AvatarUrl pgtype.Text
@@ -243,7 +241,6 @@ type UpdateUserRow struct {
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
 	row := q.db.QueryRow(ctx, updateUser,
-		arg.Username,
 		arg.FirstName,
 		arg.LastName,
 		arg.AvatarUrl,

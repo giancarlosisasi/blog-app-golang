@@ -22,26 +22,32 @@ type UserResponse struct {
 }
 
 type User struct {
-	ID        string
-	Email     string
-	Username  string
-	FirstName *string
-	LastName  *string
-	AvatarUrl *string
-	Bio       *string
-	IsActive  bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `json:"id"`
+	Email     string    `json:"email"`
+	Username  string    `json:"username"`
+	FirstName *string   `json:"first_name"`
+	LastName  *string   `json:"last_name"`
+	AvatarUrl *string   `json:"avatar_url"`
+	Bio       *string   `json:"bio"`
+	IsActive  bool      `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // only public info
 type UserProfile struct {
-	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
-	FirstName *string   `json:"first_name"`
-	LastName  *string   `json:"last_name"`
-	Bio       *string   `json:"bio"`
-	AvatarURL *string   `json:"avatar_url"`
+	ID        string  `json:"id"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Bio       *string `json:"bio"`
+	AvatarURL *string `json:"avatar_url"`
+}
+
+type UserProfileRequestBody struct {
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Bio       *string `json:"bio"`
+	AvatarURL *string `json:"avatar_url"`
 }
 
 type CreateUserRequest struct {

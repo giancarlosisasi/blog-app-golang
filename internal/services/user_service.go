@@ -142,3 +142,12 @@ func (s *UserService) GetUserByID(id string) (*models.User, error) {
 
 	return user, nil
 }
+
+func (s *UserService) UpdateUserProfileById(id string, updateProfile models.UserProfile) (*models.UserProfile, error) {
+	profile, err := s.userRepository.UpdateUserProfileById(id, updateProfile)
+	if err != nil {
+		return nil, err
+	}
+
+	return profile, nil
+}

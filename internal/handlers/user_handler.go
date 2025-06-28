@@ -201,3 +201,37 @@ func (h *UserHandler) GetUserProfile(c *fiber.Ctx) error {
 	})
 
 }
+
+func (h *UserHandler) UpdateUserProfile(c *fiber.Ctx) error {
+	var updateProfile models.UserProfile
+	err := c.BodyParser(&updateProfile)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid body request",
+		})
+	}
+
+	if updateProfile.AvatarURL == nil && updateProfile.FirstName == nil && updateProfile.LastName == nil && updateProfile.Bio != nil && *updateProfile.Bio == "" {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+			"error": "at least one field must have data",
+		})
+	}
+
+	user, ok := middleware.GetUserContext(c)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "user session not found",
+		})
+	}
+
+	profile, err := h.userService.UpdateUserProfileById(user.ID, updateProfile)
+	if err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+			"error": "failed to update the profile. Looks like the session is invalid.",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data": profile,
+	})
+}

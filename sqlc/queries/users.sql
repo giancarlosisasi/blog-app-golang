@@ -17,13 +17,12 @@ SELECT id, email, username, first_name, last_name, avatar_url, bio, is_active, c
 -- name: UpdateUser :one
 UPDATE users
 SET
-  username = $1,
-  first_name = $2,
-  last_name = $3,
-  avatar_url = $4,
-  bio = $5,
+  first_name = $1,
+  last_name = $2,
+  avatar_url = $3,
+  bio = $4,
   updated_at = NOW()
-WHERE id = $6
+WHERE id = $5
   AND is_active = true
 RETURNING id, email, username, first_name, last_name, avatar_url, bio, updated_at;
 
